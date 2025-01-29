@@ -11,9 +11,10 @@ c_patches* c_patches::get() {
 }
 
 void c_patches::enable_patches() {
+	
 	std::thread([&] {
 		c_settings* cfg = c_settings::get();
-
+		
 		while (!GetModuleHandleA(cfg->evolve_processing.c_str())) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100u));
 		}
@@ -33,7 +34,7 @@ void c_patches::enable_patches() {
 				dbg_println("[erp patcher]: skip {} (not found addr). patch module: {}", patch.name, patch.module);
 			}
 		}
-
+		
 		
 		std::uintptr_t evolve_create_hook_addr = mem::find_pattern(evolve_processing, "55 8B EC 83 EC 34 A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 45 08 53 56 8B D9");
 		if (evolve_create_hook_addr) {

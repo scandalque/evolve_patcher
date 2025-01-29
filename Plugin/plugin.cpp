@@ -150,15 +150,17 @@ std::string get_caller_module(void* func)
 
 	return "";
 }
-
 #endif
 
 int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
 #ifdef DBG
+	static std::map<std::uintptr_t, int> hook_counts;
+
 	static int hook_count = 1;
 	std::string module_name = get_caller_module(addr);
 	std::uintptr_t module_base_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.c_str()));
-	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}]", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name, (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr));
+	hook_counts[reinterpret_cast<std::uintptr_t>(addr)]++;
+	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name, (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr), hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
 	hook_count++;
 #endif
 	if (create_file_a_addr == addr) {
@@ -187,6 +189,7 @@ HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWO
 
 void c_plugin::game_loop() {
 	static bool initialized = false;
+	static bool hwnd_initialized = false;
 
 	if (initialized || !rakhook::initialize() || c_chat::get()->ref() == nullptr)
 		return game_loop_hook.call_original();
@@ -251,6 +254,10 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 
 	char mod_path[MAX_PATH] = { 0 };
 	GetModuleFileNameA(hmodule, mod_path, MAX_PATH);
+	std::filesystem::path path(mod_path);
+	if (path.filename() != "!!evolve_patcher.asi") {
+		MessageBoxA(NULL, "Обнаружено переименование файла\nДля корректной работы переименуйте плагин в !!evolve_patcher.asi", "evolve patcher", 1);
+	}
 	cfg->path = std::filesystem::path(mod_path).replace_extension("cfg").string();
 
 	cfg->load();
