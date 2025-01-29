@@ -26,17 +26,22 @@ void c_settings::load() {
 
 	file.close();
 }
-
 void c_settings::save() {
 	if (!data.size()) {
 		data = {
-		{"textdraw_logotype", true},
-		{"change_spawn_selection", true},
-		{"fix_movement", true},
-		{"no_esc_transparency", true},
-		{"normal_radar_icons_size", true},
-		{"no_binds", true},
-		{"normal_radar", true},
+			{"no_evolve_render", true},
+			{"no_esc_transparency", true},
+			{"no_binds", true},
+			{"no_framerate_vigilante", true},
+			{"fix_aim_movement", true},
+			{"no_custom_radar", true},
+			{"no_discord_activity", true},
+			{"no_new_auth", true},
+			{"no_radial_menu", true},
+			{"no_new_spawnscreen", true},
+			{"no_voice_chat", false},
+			{"no_custom_dialogs", true},
+			{"no_custom_nametags", true},
 		};
 	}
 

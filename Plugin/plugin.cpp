@@ -25,7 +25,7 @@ void c_plugin::remove_textdraws() {
 void c_plugin::create_textdraws() {
 	c_settings* cfg = c_settings::get();
 
-	if (!cfg->data["textdraw_logotype"])
+	if (!cfg->data["no_evolve_render"])
 		return;
 
 	std::string host_name(c_netgame::get()->ref()->hostname);
@@ -81,7 +81,7 @@ void c_plugin::return_normal_radar_icons_size() {
 void c_plugin::send_spawn_change_response(uint8_t value) {
 	c_settings* cfg = c_settings::get();
 
-	if (!cfg->data["change_spawn_selection"])
+	if (!cfg->data["no_new_spawnscreen"])
 		return;
 
 	RakNet::BitStream* bs = new RakNet::BitStream();
@@ -98,7 +98,7 @@ void c_plugin::send_spawn_change_response(uint8_t value) {
 void c_plugin::show_spawn_change_dialog() {
 	c_settings* cfg = c_settings::get();
 
-	if (!cfg->data["change_spawn_selection"])
+	if (!cfg->data["no_new_spawnscreen"])
 		return;
 
 	auto text = std::format("{:s}Спавн\n{:s}Недвижимое имущество\n{:s}Дом на колесах\n{:s}Частная яхта\n{:s}Семья",
@@ -197,7 +197,7 @@ void c_plugin::game_loop() {
 	return_normal_radar_icons_size();
 
 	rakhook::on_receive_packet += [](Packet* p) -> bool {
-		if (+*(p->data) == 251 && c_settings::get()->data["change_spawn_selection"]) {
+		if (+*(p->data) == 251 && c_settings::get()->data["no_new_spawnscreen"]) {
 			RakNet::BitStream* bs = new RakNet::BitStream(p->data, p->length, false);
 
 			bs->IgnoreBits(8);
@@ -222,7 +222,7 @@ void c_plugin::game_loop() {
 	rakhook::on_send_rpc += [](int& id, RakNet::BitStream* bs, PacketPriority& priority, PacketReliability& reliability, char& ord_channel, bool& sh_timestamp) -> bool {
 		c_settings* cfg = c_settings::get();
 
-		if (id == 52 && cfg->data["textdraw_logotype"]) {
+		if (id == 52 && cfg->data["no_evolve_render"]) {
 			create_textdraws();
 		}
 		return true;
