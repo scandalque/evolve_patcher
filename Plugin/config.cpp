@@ -42,6 +42,7 @@ void c_settings::save() {
 			{"no_voice_chat", false},
 			{"no_custom_dialogs", true},
 			{"no_custom_nametags", true},
+			{"no_small_icons", true},
 		};
 	}
 

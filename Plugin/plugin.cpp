@@ -197,7 +197,8 @@ void c_plugin::game_loop() {
 	initialized = true;
 	StringCompressor::AddReference();
 
-	return_normal_radar_icons_size();
+	if(c_settings::get()->data["no_small_icons"])
+		return_normal_radar_icons_size();
 
 	rakhook::on_receive_packet += [](Packet* p) -> bool {
 		if (+*(p->data) == 251 && c_settings::get()->data["no_new_spawnscreen"]) {
