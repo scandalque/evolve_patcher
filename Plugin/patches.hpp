@@ -11,107 +11,96 @@ public:
 	~c_patches();
 
 	void enable_patches();
-	void disable_patches();
-
 	static c_patches* get();
 
 private:
-	struct st_patches {
+	struct _patches {
 		std::string name;
 		std::string module;
-
-		std::uintptr_t addr;
-
-		const char* bytes;
-		const char* mask;
-
-		char* new_bytes;
-		const std::size_t size;
-		char* old_bytes;
+		std::string pattern;
+		std::string new_bytes;
 	};
 
 	std::string evolve_processing = c_settings::get()->evolve_processing;
 
-	std::vector<st_patches> patches = {
+	std::vector<_patches> patches = {
 		{
-			"textdraw_logotype",
+			"evolve_render",
 			evolve_processing,
-			0u,
-			(char*)"\xe8\x00\x00\x00\x00\x80\x3d\x00\x00\x00\x00\x00\x74\x00\x80\x3d",
-			(char*)"x????xx?????x?xx",
-			(char*)"\x90\x90\x90\x90\x90",
-			5u,
-			nullptr
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 7C 56",
+			"C3"
 		},
-			{
+		{
 			"no_esc_transparency",
 			evolve_processing,
-			0u,
-			(char*)"\x53\x8b\xdc\x83\xec\x00\x83\xe4\x00\x83\xc4\x00\x55\x8b\x6b\x00\x89\x6c\x24\x00\x8b\xec\x6a\x00\x68\x00\x00\x00\x00\x64\xa1\x00\x00\x00\x00\x50\x53\x81\xec\x00\x00\x00\x00\xa1\x00\x00\x00\x00\x33\xc5\x89\x45\x00\x56\x57\x50\x8d\x45\x00\x64\xa3\x00\x00\x00\x00\x8b\x35",
-			(char*)"xxxxx?xx?xx?xxx?xxx?xxx?x????xx????xxxx????x????xxxx?xxxxx?xx????xx",
-			(char*)"\xC3",
-			1u,
-			nullptr
+			"53 8B DC 83 EC 08 83 E4 F8 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 53 81 EC D0 00 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 EC 56 57 50 8D 45 F4 64 A3 00 00 00 00 8B 35",
+			"C3"
 		},
-			{
+		{
 			"no_binds",
 			evolve_processing,
-			0u,
-			(char*)"\x83\x38\x00\x0f\x84\x00\x00\x00\x00\xe8\x00\x00\x00\x00\x83\x38\x00\x0f\x84\x00\x00\x00\x00\xe8\x00\x00\x00\x00\x83\x38\x00\x0f\x84\x00\x00\x00\x00\xe8",
-			(char*)"xx?xx????x????xx?xx????x????xx?xx????x",
-			(char*)"\x31\xC0\x90",
-			3u,
-			nullptr
+			"83 38 00 0F 84 B4 02 00 00",
+			"31 C0 90"
 		},
-			{
-			"fix_movement", // privado nops :)
+		{
+			"no_framerate_vigilante",
 			evolve_processing,
-			0u,
-			(char*)"\xc7\x45\x00\x00\x00\x00\x00\x8b\x30\x8d\x45\x00\x50\xe8\x00\x00\x00\x00\x51\x8b\x38\x8b\xc4\x2b\xf7\x8b\xce\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\x8d\x4d\x00\xb2\x00\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\xb2\x00\xb1\x00\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\x47\x51\xb2\x00\xb9\x00\x00\x00\x00\xc7\x00\x00\x00\x00\x00\x8b\xc4\x89\x38\xe8\x00\x00\x00\x00\x83\xc4\x00\xc7\x45\x00\x00\x00\x00\x00\x8d\x45\x00\x8d\x4d\x00\x50\xe8\x00\x00\x00\x00\x8d\x4d\x00\xc7\x45\x00\x00\x00\x00\x00\x8b\x30\x8d\x45\x00\x50\xe8\x00\x00\x00\x00\x51\x8b\x38\x8b\xc4\x2b\xf7\x8b\xce\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\x8d\x4d\x00\xb2\x00\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\xb2\x00\xb1\x00\x89\x38\xe8\x00\x00\x00\x00\x8b\xc4\x47\x51\xb2\x00\xb9\x00\x00\x00\x00\xc7\x00\x00\x00\x00\x00\x8b\xc4\x89\x38\xe8\x00\x00\x00\x00\x83\xc4\x00\xc7\x45\x00\x00\x00\x00\x00\x8d\x45\x00\x50",
-			(char*)"xx?????xxxx?xx????xxxxxxxxxxxx????xxxx?x?xxx????xxx?x?xxx????xxxxx?x????xx????xxxxx????xx?xx?????xx?xx?xx????xx?xx?????xxxx?xx????xxxxxxxxxxxx????xxxx?x?xxx????xxx?x?xxx????xxxxx?x????xx????xxxxx????xx?xx?????xx?x",
-			(char*)"\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90\x90",
-			90u,
-			nullptr
+			"55 8B EC 83 EC 0C A1 ?? ?? ?? ?? 33 C5 89 45 FC 56 57 8D 45 F4",
+			"C3"
 		},
-			{
-			"normal_radar",
-			evolve_processing,
-			0u,
-			(char*)"\x55\x8b\xec\x6a\x00\x68\x00\x00\x00\x00\x64\xa1\x00\x00\x00\x00\x50\x83\xec\x00\xa1\x00\x00\x00\x00\x33\xc5\x89\x45\x00\x53\x56\x50\x8d\x45\x00\x64\xa3\x00\x00\x00\x00\x83\xec",
-			(char*)"xxxx?x????xx????xxx?x????xxxx?xxxxx?xx????xx",
-			(char*)"\xC3",
-			1u,
-			nullptr
-		},
-			{
-			"fix_movement",
-			"gta_sa.exe",
-			0x53E94Cu,
-			(char*)"",
-			(char*)"",
-			(char*)"\x00",
-			1u,
-			nullptr
-		},
-			{
-			"fix_movement",
-			"gta_sa.exe",
-			0x745240u,
-			(char*)"",
-			(char*)"",
-			(char*)"\xB0\x00\x90\x90\x90",
-			5u,
-			nullptr
-		},
-			{
-			"fix_movement",
+		{
+			"fix_aim_movement",
 			"samp.dll",
-			0u,
-			(char*)"\x51\x56\x57\x8B\xF9\xE8",
-			(char*)"xxxxxx",
-			(char*)"\xC3",
-			1u,
-			nullptr
+			"51 56 57 8B F9 E8",
+			"C3"
+		},
+		{
+			"no_custom_radar",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 0C A1 ?? ?? ?? ?? 33 C5 89 45 F0 53 56 50",
+			"C3"
+		},
+		{
+			"no_discord_activity",
+			evolve_processing,
+			"53 8B DC 83 EC 08 83 E4 F8 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 53 81 EC 08 01 00 00",
+			"C3"
+		},
+		{
+			"no_new_auth",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 A1 ?? ?? ?? ?? 33 C5 89 45 EC",
+			"C3"
+		},
+		{
+			"no_radial_menu",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 2C 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
+			"C3"
+		},
+		{
+			"no_new_spawnscreen",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 53 01 00 00",
+			"C3"
+		},
+		{
+			"no_voice_chat",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 58 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
+			"C3"
+		},
+		{
+			"no_custom_dialogs",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 2C 53 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 8B F2",
+			"C3"
+		},
+		{
+			"no_custom_nametags",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 7C 01 00 00",
+			"C3"
 		}
 	};
 };

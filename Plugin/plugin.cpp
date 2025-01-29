@@ -36,7 +36,6 @@ void c_plugin::create_textdraws() {
 		if (match.size() > 1) {
 			auto string = utils::remove_space_from_end_str(match[1].str());
 			memcpy(data::textdraws[19].text, utils::to_upper(string.c_str()), string.size());
-			//data::textdraws[19].text = utils::to_upper(string.c_str());
 		}
 	}
 
@@ -68,7 +67,6 @@ void c_plugin::create_textdraws() {
 		bs->Write(td.size);
 		bs->Write(td.text, td.size);
 
-		//bs->Write(reinterpret_cast<char*>(&td), sizeof(data::st_textdraw));
 		rakhook::emul_rpc(134, *bs);
 		delete bs;
 	}
@@ -103,8 +101,6 @@ void c_plugin::show_spawn_change_dialog() {
 	if (!cfg->data["change_spawn_selection"])
 		return;
 
-	dbg_println("show_spawn_change_dialog");
-	
 	auto text = std::format("{:s}Спавн\n{:s}Недвижимое имущество\n{:s}Дом на колесах\n{:s}Частная яхта\n{:s}Семья",
 		(last_spawn_data[1] ? "Последнее место выхода\n" : ""),
 		(last_spawn_data[2] ? "{ffffff}" : "{afafaf}"),
@@ -112,135 +108,81 @@ void c_plugin::show_spawn_change_dialog() {
 		(last_spawn_data[5] ? "{ffffff}" : "{afafaf}"),
 		(last_spawn_data[4] ? "{ffffff}" : "{afafaf}"));
 		
-
-	dbg_println("text format");
-
 	c_dialog::get()->ref()->show(655, 2, "{ffffff}Возрождение | {ae433d}Настройки", text.c_str(), "»", "«", 0);
-
-	dbg_println("showed");
 }
 
 void __fastcall c_plugin::dialog_close(c_dialog* _this, void* edx, uint8_t arg0) {
-	if(_this->id == 655) {
+	if(_this->id == 655 && arg0) {
 		int listitem = c_dialog::get()->get_listitem(_this->listbox, -1);
-		dbg_println("listitem: {}", listitem);
 
 		if (last_spawn_data[1]) {
-			switch (listitem) {
-			case 0: {
-				send_spawn_change_response(0);
-				break;
+			std::vector<uint8_t> r{ 0,1,2,3,5,4 };
+			if (listitem > 1 && !last_spawn_data[r[listitem]]) {
+				show_spawn_change_dialog();
+				return;
 			}
-			case 1: {
-				send_spawn_change_response(1);
-				break;
-			}
-			case 2: {
-				if (!last_spawn_data[2]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(2);
-				break;
-			}
-			case 3: {
-				if (!last_spawn_data[3]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(3);
-				break;
-			}
-			case 4: {
-				if (!last_spawn_data[5]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(5);
-				break;
-			}
-			case 5: {
-				if (!last_spawn_data[4]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(4);
-				break;
-			}
-			}
+			send_spawn_change_response(r[listitem]);
 		}
 		else {
-			switch (listitem) {
-			case 0: {
-				send_spawn_change_response(1);
-				break;
+			std::vector<uint8_t> r{ 1,2,3,5,4 };
+			if (listitem > 0 && !last_spawn_data[r[listitem]]) {
+				show_spawn_change_dialog();
+				return;
 			}
-			case 1: {
-				if (!last_spawn_data[2]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(2);
-				break;
-			}
-			case 2: {
-				if (!last_spawn_data[3]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(3);
-				break;
-			}
-			case 3: {
-				if (!last_spawn_data[5]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(5);
-				break;
-			}
-			case 4: {
-				if (!last_spawn_data[4]) {
-					show_spawn_change_dialog();
-					return;
-				}
-				send_spawn_change_response(4);
-				break;
-			}
-			}
+			send_spawn_change_response(r[listitem]);
 		}
 	}
 	return dialog_close_hook.call_original(_this, edx, arg0);
 }
 
-HANDLE WINAPI c_plugin::create_file_w(LPCWSTR filename, DWORD desired_access, DWORD share_mode, LPSECURITY_ATTRIBUTES security_attr,
+#ifdef DBG
+std::string get_caller_module(void* func)
+{
+	HMODULE h_module = NULL;
+	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)func, &h_module);
+
+	if (h_module != nullptr)
+	{
+		TCHAR sz_module[MAX_PATH];
+		if (GetModuleFileName(h_module, sz_module, MAX_PATH))
+			return std::filesystem::path(sz_module).filename().string();
+	}
+
+	return "";
+}
+
+#endif
+
+int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
+#ifdef DBG
+	static int hook_count = 1;
+	std::string module_name = get_caller_module(addr);
+	std::uintptr_t module_base_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.c_str()));
+	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}]", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name, (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr));
+	hook_count++;
+#endif
+	if (create_file_a_addr == addr) {
+
+		create_file_a_cb = cb;
+		create_file_a_orig = orig;
+		return evolve_create_hook_.call_original(addr, &c_plugin::create_file_a, orig);
+	}
+
+	return evolve_create_hook_.call_original(addr, cb, orig);
+}
+
+HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWORD share_mode, LPSECURITY_ATTRIBUTES security_attr,
 	DWORD creation_dispotion, DWORD flags_attr, HANDLE template_file) {
-
-	std::wstring str_filename(filename);
-	utils::to_lower(str_filename);
-
-	//std::wcout << filename << std::endl;
-
-	if (str_filename.ends_with(L"evolve\\effectspc.txd") && utils::file_exists("models\\effectspc.txd")) {
-		//std::wcout << L"hooked" << std::endl;
-		return create_file_w_hook.call_original(L"models\\effectsPC.txd", desired_access, share_mode, security_attr,
-			creation_dispotion, flags_attr, template_file);
+	std::string _filename(filename);
+	utils::to_lower(_filename);
+	if (_filename.ends_with("effectspc.txd") || _filename.ends_with("effects.fxp") || _filename.ends_with("particle.txd")) {
+		dbg_println("[erp patcher] hooked create file a for {}", _filename);
+		return reinterpret_cast<decltype(&create_file_a)>(*create_file_a_orig)
+			(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 	}
 
-	if (str_filename.ends_with(L"evolve\\effects.fxp") && utils::file_exists("models\\effects.fxp")) {
-		//std::wcout << L"hooked" << std::endl;
-		return create_file_w_hook.call_original(L"models\\effects.fxp", desired_access, share_mode, security_attr,
-			creation_dispotion, flags_attr, template_file);
-	}
-
-	if (str_filename.ends_with(L"evolve\\particle.txd") && utils::file_exists("models\\particle.txd")) {
-		//std::wcout << L"hooked" << std::endl;
-		return create_file_w_hook.call_original(L"models\\particle.txd", desired_access, share_mode, security_attr,
-			creation_dispotion, flags_attr, template_file);
-	}
-
-	return create_file_w_hook.call_original(filename, desired_access, share_mode, security_attr,
-		creation_dispotion, flags_attr, template_file);;
+	return reinterpret_cast<decltype(&create_file_a)>(create_file_a_cb)
+		(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 }
 
 void c_plugin::game_loop() {
@@ -251,9 +193,6 @@ void c_plugin::game_loop() {
 
 	initialized = true;
 	StringCompressor::AddReference();
-
-	dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
-	dialog_close_hook.add(&c_plugin::dialog_close);
 
 	return_normal_radar_icons_size();
 
@@ -294,7 +233,6 @@ void c_plugin::game_loop() {
 
 c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 {
-	dbg_println("c_plugin constructor");
 #ifdef DBG
 	[]{
 		if (!AllocConsole())
@@ -316,20 +254,23 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 	cfg->path = std::filesystem::path(mod_path).replace_extension("cfg").string();
 
 	cfg->load();
-	patches->enable_patches();
+	
 	auto kernel32_addr = LoadLibraryA("kernel32.dll");
-	if(kernel32_addr)
-		create_file_w_hook.set_adr(reinterpret_cast<std::uintptr_t>(GetProcAddress(kernel32_addr, "CreateFileW")));
-	create_file_w_hook.add(&c_plugin::create_file_w);
+	if (kernel32_addr) {
+		create_file_a_addr = reinterpret_cast<void*>(GetProcAddress(kernel32_addr, "CreateFileA"));
+	}
+
+	patches->enable_patches();
 
 	game_loop_hook.add(&c_plugin::game_loop);
+
+	dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
+	dialog_close_hook.add(&c_plugin::dialog_close);
 }
 
 
 c_plugin::~c_plugin()
 {
-	dbg_println("c_plugin denstructor");
-
 	c_settings* cfg = c_settings::get();
 
 	cfg->save();

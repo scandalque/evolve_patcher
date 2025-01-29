@@ -10,18 +10,6 @@ c_patches* c_patches::get() {
 	return &instance;
 }
 
-void c_patches::disable_patches() {
-	for (auto& patch : patches) {
-		dbg_println("disable_patches: patch name: {}", patch.name);
-		mem::safe_copy(reinterpret_cast<void*>(patch.addr), reinterpret_cast<void*>(patch.old_bytes), patch.size); 
-
-		if (patch.old_bytes != nullptr) {
-			delete[] patch.old_bytes;
-			patch.old_bytes = nullptr;
-		}
-	}
-}
-
 void c_patches::enable_patches() {
 	std::thread([&] {
 		c_settings* cfg = c_settings::get();
@@ -29,42 +17,37 @@ void c_patches::enable_patches() {
 		while (!GetModuleHandleA(cfg->evolve_processing.c_str())) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100u));
 		}
-
+		
 		for (auto& patch : patches) {
-			if (!cfg->data[patch.name]) {
-				dbg_println("enable_patches: skip {} (not enabled)", patch.name);
+			if (cfg->data.find(patch.name) != cfg->data.end() && !cfg->data[patch.name]) {
+				dbg_println("[erp patcher]: skip {} (not enabled)", patch.name);
 				continue;
 			}
-			patch.old_bytes = new char[patch.size];
-			if (patch.addr) {
-				mem::safe_copy(reinterpret_cast<void*>(patch.old_bytes), reinterpret_cast<void*>(patch.addr), patch.size);
-				mem::safe_copy(reinterpret_cast<void*>(patch.addr), reinterpret_cast<void*>(patch.new_bytes), patch.size);
 
-				dbg_println("enable_patches: patched by address. patch name: {}. patch addr: {:x}", patch.name, patch.addr);
+			std::uintptr_t addr = mem::find_pattern(patch.module, patch.pattern);
+			if (addr) {
+				mem::safe_copy(addr, patch.new_bytes);
+				dbg_println("[erp patcher]: patched {}. addr: 0x{:x}", patch.name, addr);
 			}
 			else {
-				std::uintptr_t module_base = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(patch.module.c_str()));
-				patch.addr = mem::find_pattern(module_base, mem::get_module_size(module_base), patch.bytes, patch.mask);
-
-				if (!patch.addr) {
-					dbg_println("enable_patches: skip {} (not founded addr by pattern)", patch.name);
-					continue;
-				}
-
-				mem::safe_copy(reinterpret_cast<void*>(patch.old_bytes), reinterpret_cast<void*>(patch.addr), patch.size);
-				mem::safe_copy(reinterpret_cast<void*>(patch.addr), reinterpret_cast<void*>(patch.new_bytes), patch.size);
-
-				dbg_println("enable_patches: patched by pattern. patch name: {}. patch addr: {:x}", patch.name, patch.addr);
+				dbg_println("[erp patcher]: skip {} (not found addr). patch module: {}", patch.name, patch.module);
 			}
+		}
+
+		
+		std::uintptr_t evolve_create_hook_addr = mem::find_pattern(evolve_processing, "55 8B EC 83 EC 34 A1 ?? ?? ?? ?? 33 C5 89 45 FC 8B 45 08 53 56 8B D9");
+		if (evolve_create_hook_addr) {
+			c_plugin::evolve_create_hook_.set_adr(evolve_create_hook_addr);
+			c_plugin::evolve_create_hook_.add(&c_plugin::evolve_create_hook);
+
+			dbg_println("[erp patcher]: evolve create hook hooked. addr: 0x{:x}", evolve_create_hook_addr);
+		}
+		else {
+			dbg_println("[erp patcher]: evolve create hook don't hooked (not found addr)");
 		}
 		}).detach();
 }
 
-c_patches::c_patches() {
-	dbg_println("c_patches constructor");
-}
+c_patches::c_patches() = default;
 
-c_patches::~c_patches() {
-	dbg_println("c_patches destructor");
-	disable_patches();
-}
+c_patches::~c_patches() = default;
