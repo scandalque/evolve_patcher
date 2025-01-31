@@ -175,10 +175,12 @@ int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
 	hook_count++;
 #endif
 
-	// check server
-	if (module_name == "samp.dll" && (offset == 0xad70)) {
-		dbg_println("fucked samp.dll + 0x{:x}, {:x}", offset, reinterpret_cast<std::uintptr_t>(_ReturnAddress()));
-		return 0;
+	// remove checks for entering other servers
+	std::uintptr_t samp_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("samp.dll"));
+	if (samp_addr) {
+		if (reinterpret_cast<void*>(samp_addr + 0xad70) == addr) {
+			return 0;
+		}
 	}
 
 	if (create_file_a_addr == addr) {
