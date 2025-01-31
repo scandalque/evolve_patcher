@@ -1,16 +1,17 @@
 #pragma once
-
+/*
 #ifdef DBG
 
 #include <print>
-#define dbg_println(...) std::println(__VA_ARGS__)
+#define dbg_println(...) [](__VA_ARGS__) {}();
+//std::println(__VA_ARGS__)
 
 #else
 
 #define dbg_println(...)
 
 #endif
-
+*/
 #include <windows.h>
 #include <iostream>
 
@@ -19,6 +20,7 @@
 
 #include <samp.h>
 #include "patches.hpp"
+#include "log.hpp"
 
 #ifndef VERSION
 #define VERSION rakhook::detail::to_underlying(rakhook::samp_version())

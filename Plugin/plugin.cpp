@@ -142,7 +142,6 @@ void __fastcall c_plugin::dialog_close(c_dialog* _this, void* edx, uint8_t arg0)
 	return dialog_close_hook.call_original(_this, edx, arg0);
 }
 
-#ifdef DBG
 std::string get_caller_module(void* func)
 {
 	HMODULE h_module = NULL;
@@ -157,11 +156,8 @@ std::string get_caller_module(void* func)
 
 	return "";
 }
-#endif
 
 int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
-
-#ifdef DBG
 	static std::map<std::uintptr_t, int> hook_counts;
 
 	static int hook_count = 1;
@@ -173,7 +169,6 @@ int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
 	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name,
 		offset, hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
 	hook_count++;
-#endif
 
 	// remove checks for entering other servers
 	std::uintptr_t samp_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("samp.dll"));
@@ -272,6 +267,8 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 		SetConsoleOutputCP(1251);
 		}();
 #endif
+
+	clear_log();
 
 	c_settings* cfg = c_settings::get();
 	c_patches* patches = c_patches::get();

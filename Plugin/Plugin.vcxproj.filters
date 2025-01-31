@@ -47,5 +47,8 @@
     <ClInclude Include="memory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="log.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
