@@ -31,7 +31,6 @@ public:
 	~c_plugin();
 
 	static void game_loop();
-	static HANDLE WINAPI create_file_w(LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
 	static HANDLE WINAPI create_file_a(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
 	static void __fastcall dialog_close(c_dialog*, void*, uint8_t);
 	static int __fastcall evolve_create_hook(void*, void*, void**);
@@ -56,7 +55,6 @@ private:
 	static void** create_file_a_orig;
 };
 inline c_hook<void(*)()> c_plugin::game_loop_hook = { 0x561B10 };
-inline c_hook<decltype(&CreateFileW)> c_plugin::create_file_w_hook = {};
 inline c_hook<decltype(&CreateFileA)> c_plugin::create_file_a_hook = {};
 inline c_hook<void(__fastcall*)(c_dialog*, void*, uint8_t)> c_plugin::dialog_close_hook = {};
 inline c_hook<int(__fastcall*)(void*, void*, void**)> c_plugin::evolve_create_hook_ = {};

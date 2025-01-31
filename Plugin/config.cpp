@@ -43,6 +43,8 @@ void c_settings::save() {
 			{"no_custom_dialogs", true},
 			{"no_custom_nametags", true},
 			{"no_small_icons", true},
+			{"no_custom_chat", true},
+			{"no_custom_menu", false},
 		};
 	}
 

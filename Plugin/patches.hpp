@@ -101,6 +101,18 @@ private:
 			evolve_processing,
 			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 7C 01 00 00",
 			"C3"
+		},
+		{
+			"no_custom_menu",
+			evolve_processing,
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 5C A1 ?? ?? ?? ?? 33 C5 89 45 F0 53 56 57 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
+			"C3"
+		},
+		{
+			"no_custom_chat",
+			evolve_processing,
+			"55 8B EC 83 E4 F8 E8",
+			"C3"
 		}
 	};
 };

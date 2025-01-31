@@ -1,4 +1,4 @@
-#include "plugin.hpp"
+  #include "plugin.hpp"
 #include "config.hpp"
 #include "data.hpp"
 #include "utils.hpp"
@@ -10,6 +10,12 @@
 #include <vector>
 #include <format>
 #include <filesystem>
+#include <set>
+
+#ifdef DBG
+#include <intrin.h>
+#pragma intrinsic(_ReturnAddress)
+#endif
 
 void c_plugin::remove_textdraws() {
 	for (auto& td : data::textdraws) {
@@ -38,6 +44,7 @@ void c_plugin::create_textdraws() {
 			memcpy(data::textdraws[19].text, utils::to_upper(string.c_str()), string.size());
 		}
 	}
+	else return;
 
 	for (auto &td : data::textdraws) {
 		RakNet::BitStream* bs = new RakNet::BitStream();
@@ -153,18 +160,29 @@ std::string get_caller_module(void* func)
 #endif
 
 int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
+
 #ifdef DBG
 	static std::map<std::uintptr_t, int> hook_counts;
 
 	static int hook_count = 1;
 	std::string module_name = get_caller_module(addr);
 	std::uintptr_t module_base_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.c_str()));
+	std::uintptr_t offset = (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr);
+
 	hook_counts[reinterpret_cast<std::uintptr_t>(addr)]++;
-	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name, (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr), hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
+	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name,
+		offset, hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
 	hook_count++;
 #endif
-	if (create_file_a_addr == addr) {
 
+	// check server
+	if (module_name == "samp.dll" && (offset == 0xad70)) {
+		dbg_println("fucked samp.dll + 0x{:x}, {:x}", offset, reinterpret_cast<std::uintptr_t>(_ReturnAddress()));
+		return 0;
+	}
+
+	if (create_file_a_addr == addr) {
+		dbg_println("[erp patcher] set new callback for create file a hook");
 		create_file_a_cb = cb;
 		create_file_a_orig = orig;
 		return evolve_create_hook_.call_original(addr, &c_plugin::create_file_a, orig);
@@ -196,6 +214,9 @@ void c_plugin::game_loop() {
 
 	initialized = true;
 	StringCompressor::AddReference();
+
+	dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
+	dialog_close_hook.add(&c_plugin::dialog_close);
 
 	if(c_settings::get()->data["no_small_icons"])
 		return_normal_radar_icons_size();
@@ -256,24 +277,26 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 	char mod_path[MAX_PATH] = { 0 };
 	GetModuleFileNameA(hmodule, mod_path, MAX_PATH);
 	std::filesystem::path path(mod_path);
+	
 	if (path.filename() != "!!evolve_patcher.asi") {
 		MessageBoxA(NULL, "Обнаружено переименование файла\nДля корректной работы переименуйте плагин в !!evolve_patcher.asi", "evolve patcher", 1);
 	}
+	
 	cfg->path = std::filesystem::path(mod_path).replace_extension("cfg").string();
 
 	cfg->load();
 	
+	
 	auto kernel32_addr = LoadLibraryA("kernel32.dll");
 	if (kernel32_addr) {
+		dbg_println("kernel32 loaded, addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
 		create_file_a_addr = reinterpret_cast<void*>(GetProcAddress(kernel32_addr, "CreateFileA"));
+		dbg_println("createfilea addr: {:x}", reinterpret_cast<std::uintptr_t>(create_file_a_addr));
 	}
 
 	patches->enable_patches();
 
 	game_loop_hook.add(&c_plugin::game_loop);
-
-	dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
-	dialog_close_hook.add(&c_plugin::dialog_close);
 }
 
 
@@ -284,7 +307,6 @@ c_plugin::~c_plugin()
 	cfg->save();
 
 	game_loop_hook.remove();
-	create_file_w_hook.remove();
 	remove_textdraws();
 
 	rakhook::destroy();
