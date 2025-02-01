@@ -1,17 +1,5 @@
 #pragma once
-/*
-#ifdef DBG
 
-#include <print>
-#define dbg_println(...) [](__VA_ARGS__) {}();
-//std::println(__VA_ARGS__)
-
-#else
-
-#define dbg_println(...)
-
-#endif
-*/
 #include <windows.h>
 #include <iostream>
 
@@ -20,7 +8,6 @@
 
 #include <samp.h>
 #include "patches.hpp"
-#include "log.hpp"
 
 #ifndef VERSION
 #define VERSION rakhook::detail::to_underlying(rakhook::samp_version())
@@ -43,6 +30,7 @@ public:
 	static c_hook<void(__fastcall*)(c_dialog*, void*, uint8_t)> dialog_close_hook;
 	static c_hook<int(__fastcall*)(void*, void*, void**)> evolve_create_hook_;
 
+	static std::string get_caller_module(void* func);
 	static void create_textdraws();
 	static void remove_textdraws();
 	static void return_normal_radar_icons_size();

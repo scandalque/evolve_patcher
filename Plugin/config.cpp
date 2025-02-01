@@ -4,8 +4,6 @@
 #include <fstream>
 
 void c_settings::load() {
-	dbg_println("c_settings load");
-
 	std::ifstream file(this->path);
 
 	if (!file) {
@@ -62,12 +60,9 @@ void c_settings::save() {
 	file.close();
 }
 
-c_settings::c_settings() {
-	dbg_println("c_settings constructor");
-}
+c_settings::c_settings() = default;
 
 c_settings::~c_settings() {
-	dbg_println("c_settings destructor");
 	save();
 }
 

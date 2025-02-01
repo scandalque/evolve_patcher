@@ -142,7 +142,7 @@ void __fastcall c_plugin::dialog_close(c_dialog* _this, void* edx, uint8_t arg0)
 	return dialog_close_hook.call_original(_this, edx, arg0);
 }
 
-std::string get_caller_module(void* func)
+std::string c_plugin::get_caller_module(void* func)
 {
 	HMODULE h_module = NULL;
 	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)func, &h_module);
@@ -166,20 +166,22 @@ int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
 	std::uintptr_t offset = (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr);
 
 	hook_counts[reinterpret_cast<std::uintptr_t>(addr)]++;
-	dbg_println("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name,
+	utils::log("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name,
 		offset, hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
 	hook_count++;
 
 	// remove checks for entering other servers
 	std::uintptr_t samp_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("samp.dll"));
+
 	if (samp_addr) {
 		if (reinterpret_cast<void*>(samp_addr + 0xad70) == addr) {
+			utils::log("check for entering other servers removed");
 			return 0;
 		}
 	}
 
 	if (create_file_a_addr == addr) {
-		dbg_println("[erp patcher] set new callback for create file a hook");
+		utils::log("set new callback for create file a hook");
 		create_file_a_cb = cb;
 		create_file_a_orig = orig;
 		return evolve_create_hook_.call_original(addr, &c_plugin::create_file_a, orig);
@@ -192,8 +194,10 @@ HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWO
 	DWORD creation_dispotion, DWORD flags_attr, HANDLE template_file) {
 	std::string _filename(filename);
 	utils::to_lower(_filename);
-	if (_filename.ends_with("effectspc.txd") || _filename.ends_with("effects.fxp") || _filename.ends_with("particle.txd")) {
-		dbg_println("[erp patcher] hooked create file a for {}", _filename);
+	if ((_filename.ends_with("effectspc.txd") && utils::file_exists("models\\effectspc.txd")) ||
+		(_filename.ends_with("effects.fxp")   && utils::file_exists("models\\effects.fxp")) || 
+		(_filename.ends_with("particle.txd")  && utils::file_exists("models\\particle.txd"))) {
+		utils::log("hooked create file a for {}", _filename);
 		return reinterpret_cast<decltype(&create_file_a)>(*create_file_a_orig)
 			(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 	}
@@ -268,8 +272,6 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 		}();
 #endif
 
-	clear_log();
-
 	c_settings* cfg = c_settings::get();
 	c_patches* patches = c_patches::get();
 
@@ -282,15 +284,17 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 	}
 	
 	cfg->path = std::filesystem::path(mod_path).replace_extension("cfg").string();
+	utils::log_path = std::filesystem::path(mod_path).replace_extension("log").string();
+
+	utils::clear_log();
 
 	cfg->load();
 	
-	
 	auto kernel32_addr = LoadLibraryA("kernel32.dll");
 	if (kernel32_addr) {
-		dbg_println("kernel32 loaded, addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
+		utils::log("kernel32 loaded, addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
 		create_file_a_addr = reinterpret_cast<void*>(GetProcAddress(kernel32_addr, "CreateFileA"));
-		dbg_println("createfilea addr: {:x}", reinterpret_cast<std::uintptr_t>(create_file_a_addr));
+		utils::log("createfilea addr: {:x}", reinterpret_cast<std::uintptr_t>(create_file_a_addr));
 	}
 
 	patches->enable_patches();
