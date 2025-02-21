@@ -300,8 +300,17 @@ void c_plugin::game_loop() {
 	return game_loop_hook.call_original();
 }
 
+c_hook<int(__fastcall*)(void*, void*, int)> enable_hud_hook;
+
+int __fastcall enable_hud(void* game, void* edx, int state) {
+	utils::log("{:x}", reinterpret_cast<std::uintptr_t>(_ReturnAddress()));
+	return enable_hud_hook.call_original(game, edx, state);
+}
+
 c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 {
+	enable_hud_hook.set_adr(mem::find_pattern("samp.dll", "8B 4C 24 04 33 C0 3B C8"));
+	enable_hud_hook.add(&enable_hud);
 #ifdef DBG
 	[]{
 		if (!AllocConsole())

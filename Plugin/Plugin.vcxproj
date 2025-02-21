@@ -47,13 +47,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
-    <OutDir>C:\GTASAMP\</OutDir>
+    <OutDir>C:\evolve\</OutDir>
     <TargetExt>.asi</TargetExt>
     <TargetName>$(SolutionName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
-    <OutDir>C:\GTASAMP\</OutDir>
+    <OutDir>C:\evolve\</OutDir>
     <TargetExt>.asi</TargetExt>
     <TargetName>$(SolutionName)</TargetName>
   </PropertyGroup>
