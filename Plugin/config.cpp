@@ -1,12 +1,16 @@
 #include "config.hpp"
 #include "plugin.hpp"
+#include "utils.hpp"
 
 #include <fstream>
 
 void c_settings::load() {
+	utils::log("config load called");
+
 	std::ifstream file(this->path);
 
 	if (!file) {
+		utils::log("file not found, saving");
 		save();
 		return;
 	}
@@ -20,12 +24,16 @@ void c_settings::load() {
 			continue;
 		}
 		data[key] = std::stoi(value);
+
+		utils::log("data[{}] = {}", key, std::stoi(value));
 	}
 
 	file.close();
 }
 void c_settings::save() {
+	utils::log("config save called");
 	if (!data.size()) {
+		utils::log("data is empty");
 		data = {
 			{"no_evolve_render", true},
 			{"no_esc_transparency", true},
@@ -41,17 +49,19 @@ void c_settings::save() {
 			{"no_custom_dialogs", true},
 			{"no_custom_nametags", true},
 			{"no_small_icons", true},
-			{"no_custom_chat", true},
 			{"no_custom_menu", false},
 		};
 	}
 
 	std::ofstream file(this->path);
 
-	if (!file.is_open())
+	if (!file.is_open()) {
+		utils::log("config save: !file.isopen");
 		return;
+	}
 
 	for (auto& _data : this->data) {
+		utils::log("config save: ", _data.first, _data.second);
 		file << _data.first << " " << _data.second << std::endl;
 	}
 

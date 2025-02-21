@@ -12,13 +12,27 @@ c_patches* c_patches::get() {
 }
 
 void c_patches::enable_patches() {
-	
+	utils::log("enable patches called");
 
 	std::thread([&] {
 		c_settings* cfg = c_settings::get();
 
-		if (!GetModuleHandleA(evolve_processing.c_str()))
+		while (!GetModuleHandleA(evolve_processing.c_str())) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+
+		HMODULE kernel32_addr = static_cast<HMODULE>(0);
+		do {
+			kernel32_addr = GetModuleHandleA("kernel32.dll");
+		} while (!kernel32_addr);
+
+		utils::log("kernel32 addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
+
+		do {
+			c_plugin::create_file_a_addr = GetProcAddress(kernel32_addr, "CreateFileA");
+		} while (!c_plugin::create_file_a_addr);
+
+		utils::log("create file a addr: {:x}", reinterpret_cast<std::uintptr_t>(c_plugin::create_file_a_addr));
 
 		std::uintptr_t evolve_create_hook_addr = 0;
 		do {

@@ -27,8 +27,8 @@ private:
 		{
 			"no_evolve_render",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 7C 56",
-			"C3"
+			"E8 ?? ?? ?? ?? A0 ?? ?? ?? ?? 66 0F 6E 05 44 70 C1 00",
+			"90 90 90 90 90"
 		},
 		{
 			"no_esc_transparency",
@@ -45,7 +45,7 @@ private:
 		{
 			"no_framerate_vigilante",
 			evolve_processing,
-			"55 8B EC 83 EC 0C A1 ?? ?? ?? ?? 33 C5 89 45 FC 56 57 8D 45 F4",
+			"55 8b ec 83 ec ? a1 ? ? ? ? 33 c5 89 45 ? 56 57 8d 45 ? c7 45",
 			"C3"
 		},
 		{
@@ -57,7 +57,7 @@ private:
 		{
 			"no_custom_radar",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 0C A1 ?? ?? ?? ?? 33 C5 89 45 F0 53 56 50",
+			"55 8b ec 6a ? 68 ? ? ? ? 64 a1 ? ? ? ? 50 83 ec ? a1 ? ? ? ? 33 c5 89 45 ? 53 56 50 8d 45 ? 64 a3 ? ? ? ? 83 ec",
 			"C3"
 		},
 		{
@@ -99,19 +99,13 @@ private:
 		{
 			"no_custom_nametags",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 7C 01 00 00",
-			"C3"
+			"e8 ? ? ? ? e8 ? ? ? ? 8d 45 ? 50 ff 15",
+			"90 90 90 90 90"
 		},
 		{
 			"no_custom_menu",
 			evolve_processing,
 			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 5C A1 ?? ?? ?? ?? 33 C5 89 45 F0 53 56 57 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
-			"C3"
-		},
-		{
-			"no_custom_chat",
-			evolve_processing,
-			"55 8B EC 83 E4 F8 E8",
 			"C3"
 		}
 	};

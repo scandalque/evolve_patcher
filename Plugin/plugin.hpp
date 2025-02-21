@@ -36,13 +36,13 @@ public:
 	static void return_normal_radar_icons_size();
 	static void show_spawn_change_dialog();
 	static void send_spawn_change_response(uint8_t);
-private:
-	HMODULE hmodule;
-	static std::vector<int> last_spawn_data;
 
 	static void* create_file_a_addr;
 	static void* create_file_a_cb;
 	static void** create_file_a_orig;
+private:
+	HMODULE hmodule;
+	static std::vector<int> last_spawn_data;
 };
 inline c_hook<void(*)()> c_plugin::game_loop_hook = { 0x561B10 };
 inline c_hook<decltype(&CreateFileA)> c_plugin::create_file_a_hook = {};

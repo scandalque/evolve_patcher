@@ -2,6 +2,7 @@
 #include "config.hpp"
 #include "data.hpp"
 #include "utils.hpp"
+#include "memory.hpp"
 
 #include <RakNet/PacketEnumerations.h>
 #include <RakNet/StringCompressor.h>
@@ -122,6 +123,8 @@ void __fastcall c_plugin::dialog_close(c_dialog* _this, void* edx, uint8_t arg0)
 	if(_this->id == 655 && arg0) {
 		int listitem = c_dialog::get()->get_listitem(_this->listbox, -1);
 
+		utils::log("spawn change dialog, listitem: {}, button: {}", listitem, arg0);
+
 		if (last_spawn_data[1]) {
 			std::vector<uint8_t> r{ 0,1,2,3,5,4 };
 			if (listitem > 1 && !last_spawn_data[r[listitem]]) {
@@ -206,6 +209,41 @@ HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWO
 		(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 }
 
+#ifdef DBG
+bool parse_input(const char* input, std::uintptr_t& hexValue, std::string& text) {
+	if (input == nullptr || *input == '\0') {
+		return false;
+	}
+
+	std::istringstream stream(input);
+	std::string hexStr;
+
+	stream >> hexStr;
+
+	char* endPtr = nullptr;
+	hexValue = std::strtoul(hexStr.c_str(), &endPtr, 16);
+
+	if (endPtr == hexStr.c_str() || *endPtr != '\0') {
+		return false;
+	}
+	std::getline(stream >> std::ws, text);
+
+	return true;
+};
+
+void __cdecl memory_set_cmd(const char* param) {
+	std::uintptr_t hex;
+	std::string bytes;
+	if (!parse_input(param, hex, bytes)) {
+		c_chat::get()->ref()->add_message(0xFFDEADFF, "[erp patcher]: {ffffff}use: /memset [addr] [bytes (ida style)]");
+		return;
+	}
+
+	mem::safe_copy(hex, bytes);
+}
+#endif
+
+
 void c_plugin::game_loop() {
 	static bool initialized = false;
 	static bool hwnd_initialized = false;
@@ -216,11 +254,16 @@ void c_plugin::game_loop() {
 	initialized = true;
 	StringCompressor::AddReference();
 
-	dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
-	dialog_close_hook.add(&c_plugin::dialog_close);
+	c_plugin::dialog_close_hook.set_adr(rakhook::samp_addr(offsets::dialog::close[VERSION]));
+	c_plugin::dialog_close_hook.add(&c_plugin::dialog_close);
 
 	if(c_settings::get()->data["no_small_icons"])
 		return_normal_radar_icons_size();
+
+#ifdef DBG
+
+	c_input::get()->ref()->add_command("memset", memory_set_cmd);
+#endif
 
 	rakhook::on_receive_packet += [](Packet* p) -> bool {
 		if (+*(p->data) == 251 && c_settings::get()->data["no_new_spawnscreen"]) {
@@ -288,15 +331,9 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 
 	utils::clear_log();
 
-	cfg->load();
-	
-	auto kernel32_addr = LoadLibraryA("kernel32.dll");
-	if (kernel32_addr) {
-		utils::log("kernel32 loaded, addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
-		create_file_a_addr = reinterpret_cast<void*>(GetProcAddress(kernel32_addr, "CreateFileA"));
-		utils::log("createfilea addr: {:x}", reinterpret_cast<std::uintptr_t>(create_file_a_addr));
-	}
+	utils::log("plugin loaded");
 
+	cfg->load();
 	patches->enable_patches();
 
 	game_loop_hook.add(&c_plugin::game_loop);
