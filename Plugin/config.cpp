@@ -43,11 +43,8 @@ void c_settings::save() {
 			{"no_custom_radar", true},
 			{"no_discord_activity", true},
 			{"no_new_auth", true},
-			{"no_radial_menu", true},
 			{"no_new_spawnscreen", true},
 			{"no_voice_chat", false},
-			{"no_custom_dialogs", true},
-			{"no_custom_nametags", true},
 			{"no_small_icons", true},
 			{"no_custom_menu", false},
 		};

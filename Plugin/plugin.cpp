@@ -1,4 +1,6 @@
-  #include "plugin.hpp"
+#pragma comment(lib, "d3d9.lib")
+
+#include "plugin.hpp"
 #include "config.hpp"
 #include "data.hpp"
 #include "utils.hpp"
@@ -210,20 +212,21 @@ HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWO
 }
 
 #ifdef DBG
-bool parse_input(const char* input, std::uintptr_t& hexValue, std::string& text) {
+
+inline bool parse_input(const char* input, std::uintptr_t& hexValue, std::string& text) {
 	if (input == nullptr || *input == '\0') {
 		return false;
 	}
 
 	std::istringstream stream(input);
-	std::string hexStr;
+	std::string hex_str;
 
-	stream >> hexStr;
+	stream >> hex_str;
 
-	char* endPtr = nullptr;
-	hexValue = std::strtoul(hexStr.c_str(), &endPtr, 16);
+	char* end_ptr = nullptr;
+	hexValue = std::strtoul(hex_str.c_str(), &end_ptr, 16);
 
-	if (endPtr == hexStr.c_str() || *endPtr != '\0') {
+	if (end_ptr == hex_str.c_str() || *end_ptr != '\0') {
 		return false;
 	}
 	std::getline(stream >> std::ws, text);
@@ -261,28 +264,39 @@ void c_plugin::game_loop() {
 		return_normal_radar_icons_size();
 
 #ifdef DBG
-
 	c_input::get()->ref()->add_command("memset", memory_set_cmd);
 #endif
 
 	rakhook::on_receive_packet += [](Packet* p) -> bool {
-		if (+*(p->data) == 251 && c_settings::get()->data["no_new_spawnscreen"]) {
+
+
+		if (+*(p->data) == 251) {
 			RakNet::BitStream* bs = new RakNet::BitStream(p->data, p->length, false);
+			
+			if (c_settings::get()->data["no_new_spawnscreen"]) {
+				bs->IgnoreBits(8);
+				uint32_t event_type;
+				bs->Read(event_type);
+
+				if (event_type == 9) {
+					uint8_t value;
+					bs->Read(value);
+
+					last_spawn_data = utils::decimal_to_binary(value);
+
+					show_spawn_change_dialog();
+					return false;
+
+				}
+			}
+
+			bs->ResetReadPointer();
 
 			bs->IgnoreBits(8);
 			uint32_t event_type;
 			bs->Read(event_type);
 
-			if (event_type == 9) {
-				uint8_t value;
-				bs->Read(value);
-
-				last_spawn_data = utils::decimal_to_binary(value);
-
-				show_spawn_change_dialog();
-				return false;
-
-			}
+			bs->ResetReadPointer();
 			delete bs;
 		}
 		return true;
@@ -322,7 +336,7 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 	GetModuleFileNameA(hmodule, mod_path, MAX_PATH);
 	std::filesystem::path path(mod_path);
 	
-	if (path.filename() != "!!evolve_patcher.asi") {
+	if (path.filename().string().c_str()[0] != '!' || path.filename().string().c_str()[1] != '!') {
 		MessageBoxA(NULL, "Обнаружено переименование файла\nДля корректной работы переименуйте плагин в !!evolve_patcher.asi", "evolve patcher", 1);
 	}
 	
@@ -330,7 +344,6 @@ c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 	utils::log_path = std::filesystem::path(mod_path).replace_extension("log").string();
 
 	utils::clear_log();
-
 	utils::log("plugin loaded");
 
 	cfg->load();

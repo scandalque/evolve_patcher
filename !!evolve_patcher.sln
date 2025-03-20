@@ -3,16 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin", "Plugin\Plugin.vcxproj", "{E049DABF-1394-41B8-8283-D25ADA77F93A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "Plugin\Plugin.vcxproj", "{E049DABF-1394-41B8-8283-D25ADA77F93A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MinHook", "MinHook\MinHook.vcxproj", "{CE389474-3826-437A-8B3C-7A2702620840}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minhook", "MinHook\MinHook.vcxproj", "{CE389474-3826-437A-8B3C-7A2702620840}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RakHook", "RakHook\RakHook.vcxproj", "{D9AEF363-50D0-4FFC-9A08-A506ACD83F22}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rakhook", "RakHook\RakHook.vcxproj", "{D9AEF363-50D0-4FFC-9A08-A506ACD83F22}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CE389474-3826-437A-8B3C-7A2702620840} = {CE389474-3826-437A-8B3C-7A2702620840}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SA-MP", "SA-MP\SA-MP.vcxproj", "{B2D275FD-8D08-423D-9E60-69480CF060BC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "samp", "SA-MP\SA-MP.vcxproj", "{B2D275FD-8D08-423D-9E60-69480CF060BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

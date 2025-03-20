@@ -46,16 +46,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
-    <OutDir>C:\evolve\</OutDir>
+    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
+    <OutDir>C:\Games\EvolveLauncher\client\</OutDir>
     <TargetExt>.asi</TargetExt>
     <TargetName>$(SolutionName)</TargetName>
+    <LibraryPath>$(SolutionDir)build\dependencies\imgui;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
-    <OutDir>C:\evolve\</OutDir>
+    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)RakHook\include;$(SolutionDir)SA-MP;$(SolutionDir)MinHook;$(IncludePath)</IncludePath>
+    <OutDir>C:\Games\EvolveLauncher\client\</OutDir>
     <TargetExt>.asi</TargetExt>
     <TargetName>$(SolutionName)</TargetName>
+    <LibraryPath>$(SolutionDir)build\dependencies\imgui;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -74,6 +76,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateMapFile>false</GenerateMapFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>imgui.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -93,6 +96,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateMapFile>false</GenerateMapFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>imgui.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

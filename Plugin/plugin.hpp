@@ -8,6 +8,7 @@
 
 #include <samp.h>
 #include "patches.hpp"
+#include "utils.hpp"
 
 #ifndef VERSION
 #define VERSION rakhook::detail::to_underlying(rakhook::samp_version())

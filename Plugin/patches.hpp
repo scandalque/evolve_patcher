@@ -79,12 +79,6 @@ private:
 			"C3"
 		},
 		{
-			"no_radial_menu",
-			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 2C 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
-			"C3"
-		},
-		{
 			"no_new_spawnscreen",
 			evolve_processing,
 			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 53 01 00 00",
@@ -97,22 +91,10 @@ private:
 			"C3"
 		},
 		{
-			"no_custom_dialogs",
-			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 2C 53 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 8B F2",
-			"C3"
-		},
-		{
-			"no_custom_nametags",
-			evolve_processing,
-			"e8 ? ? ? ? e8 ? ? ? ? 8d 45 ? 50 ff 15",
-			"90 90 90 90 90"
-		},
-		{
 			"no_custom_menu",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 5C A1 ?? ?? ?? ?? 33 C5 89 45 F0 53 56 57 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
-			"C3"
+			"0f 85 ? ? ? ? a1 ? ? ? ? c6 05",
+			"90 E9"
 		}
 	};
 };
