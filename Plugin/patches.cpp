@@ -11,6 +11,15 @@ c_patches* c_patches::get() {
 	return &instance;
 }
 
+std::vector<std::string> c_patches::get_patches_names() {
+	std::vector<std::string> __patches;
+	for (auto& patch : patches) {
+		__patches.push_back(patch.name);
+	}
+
+	return __patches;
+}
+
 void c_patches::enable_patches() {
 	utils::log("enable patches called");
 
@@ -21,24 +30,8 @@ void c_patches::enable_patches() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
-		HMODULE kernel32_addr = static_cast<HMODULE>(0);
-		do {
-			kernel32_addr = GetModuleHandleA("kernel32.dll");
-		} while (!kernel32_addr);
-
-		utils::log("kernel32 addr: {:x}", reinterpret_cast<std::uintptr_t>(kernel32_addr));
-
-		do {
-			c_plugin::create_file_a_addr = GetProcAddress(kernel32_addr, "CreateFileA");
-		} while (!c_plugin::create_file_a_addr);
-
-		utils::log("create file a addr: {:x}", reinterpret_cast<std::uintptr_t>(c_plugin::create_file_a_addr));
-
 		std::uintptr_t evolve_create_hook_addr = 0;
-		do {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			evolve_create_hook_addr = mem::find_pattern(evolve_processing, "55 8B EC 83 EC 34 a1 ?? ?? ?? ?? 33 c5 89 45 ?? 8b 45 ?? 53 56 8b d9");
-		} while (!evolve_create_hook_addr);
+		evolve_create_hook_addr = mem::find_pattern(evolve_processing, "55 8B EC 81 EC D8 00 00 00 53 56 57 8D 7D E8 B9 06 00 00 00 B8 CC CC CC CC F3 AB B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B F4");
 
 		if (evolve_create_hook_addr) {
 			c_plugin::evolve_create_hook_.set_adr(evolve_create_hook_addr);

@@ -7,6 +7,8 @@
 #include <fstream>
 #include <chrono>
 
+// all shit here
+
 namespace utils {
     inline std::string log_path = "";
 

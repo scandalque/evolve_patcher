@@ -147,62 +147,30 @@ void __fastcall c_plugin::dialog_close(c_dialog* _this, void* edx, uint8_t arg0)
 	return dialog_close_hook.call_original(_this, edx, arg0);
 }
 
-std::string c_plugin::get_caller_module(void* func)
-{
-	HMODULE h_module = NULL;
-	GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)func, &h_module);
 
-	if (h_module != nullptr)
-	{
-		TCHAR sz_module[MAX_PATH];
-		if (GetModuleFileName(h_module, sz_module, MAX_PATH))
-			return std::filesystem::path(sz_module).filename().string();
+
+int __stdcall c_plugin::evolve_create_hook(LPCWSTR lpModuleName, LPCSTR lpProcName, LPCVOID callback, int original, FARPROC* a5) {
+	if (!strcmp(lpProcName, "CreateFileA")) {
+		utils::log("createfilea hooked");
+		create_file_a_cb = const_cast<void*>(callback);
+		create_file_a_orig = reinterpret_cast<void**>(original);
+
+		return evolve_create_hook_.call_original(lpModuleName, lpProcName, &c_plugin::create_file_a, original, a5);
 	}
 
-	return "";
-}
-
-int __fastcall c_plugin::evolve_create_hook(void* addr, void* cb, void** orig) {
-	static std::map<std::uintptr_t, int> hook_counts;
-
-	static int hook_count = 1;
-	std::string module_name = get_caller_module(addr);
-	std::uintptr_t module_base_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA(module_name.c_str()));
-	std::uintptr_t offset = (reinterpret_cast<std::uintptr_t>(addr) - module_base_addr);
-
-	hook_counts[reinterpret_cast<std::uintptr_t>(addr)]++;
-	utils::log("[{}] evolve_create_hook: 0x{:x} [{} + 0x{:x}] hook counts on this address: {}", hook_count, reinterpret_cast<std::uintptr_t>(addr), module_name,
-		offset, hook_counts[reinterpret_cast<std::uintptr_t>(addr)]);
-	hook_count++;
-
-	// remove checks for entering other servers
-	std::uintptr_t samp_addr = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("samp.dll"));
-
-	if (samp_addr) {
-		if (reinterpret_cast<void*>(samp_addr + 0xad70) == addr) {
-			utils::log("check for entering other servers removed");
-			return 0;
-		}
-	}
-
-	if (create_file_a_addr == addr) {
-		utils::log("set new callback for create file a hook");
-		create_file_a_cb = cb;
-		create_file_a_orig = orig;
-		return evolve_create_hook_.call_original(addr, &c_plugin::create_file_a, orig);
-	}
-
-	return evolve_create_hook_.call_original(addr, cb, orig);
+	return evolve_create_hook_.call_original(lpModuleName, lpProcName, callback, original, a5);
 }
 
 HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWORD share_mode, LPSECURITY_ATTRIBUTES security_attr,
 	DWORD creation_dispotion, DWORD flags_attr, HANDLE template_file) {
+
 	std::string _filename(filename);
 	utils::to_lower(_filename);
 	if ((_filename.ends_with("effectspc.txd") && utils::file_exists("models\\effectspc.txd")) ||
 		(_filename.ends_with("effects.fxp")   && utils::file_exists("models\\effects.fxp")) || 
 		(_filename.ends_with("particle.txd")  && utils::file_exists("models\\particle.txd"))) {
 		utils::log("hooked create file a for {}", _filename);
+
 		return reinterpret_cast<decltype(&create_file_a)>(*create_file_a_orig)
 			(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 	}
@@ -211,43 +179,7 @@ HANDLE WINAPI c_plugin::create_file_a(LPCSTR filename, DWORD desired_access, DWO
 		(filename, desired_access, share_mode, security_attr, creation_dispotion, flags_attr, template_file);
 }
 
-#ifdef DBG
-
-inline bool parse_input(const char* input, std::uintptr_t& hexValue, std::string& text) {
-	if (input == nullptr || *input == '\0') {
-		return false;
-	}
-
-	std::istringstream stream(input);
-	std::string hex_str;
-
-	stream >> hex_str;
-
-	char* end_ptr = nullptr;
-	hexValue = std::strtoul(hex_str.c_str(), &end_ptr, 16);
-
-	if (end_ptr == hex_str.c_str() || *end_ptr != '\0') {
-		return false;
-	}
-	std::getline(stream >> std::ws, text);
-
-	return true;
-};
-
-void __cdecl memory_set_cmd(const char* param) {
-	std::uintptr_t hex;
-	std::string bytes;
-	if (!parse_input(param, hex, bytes)) {
-		c_chat::get()->ref()->add_message(0xFFDEADFF, "[erp patcher]: {ffffff}use: /memset [addr] [bytes (ida style)]");
-		return;
-	}
-
-	mem::safe_copy(hex, bytes);
-}
-#endif
-
-
-void c_plugin::game_loop() {
+void c_plugin::game_loop() { 
 	static bool initialized = false;
 	static bool hwnd_initialized = false;
 
@@ -262,10 +194,6 @@ void c_plugin::game_loop() {
 
 	if(c_settings::get()->data["no_small_icons"])
 		return_normal_radar_icons_size();
-
-#ifdef DBG
-	c_input::get()->ref()->add_command("memset", memory_set_cmd);
-#endif
 
 	rakhook::on_receive_packet += [](Packet* p) -> bool {
 
@@ -317,16 +245,14 @@ void c_plugin::game_loop() {
 c_plugin::c_plugin(HMODULE hmodule) : hmodule(hmodule)
 {
 #ifdef DBG
-	[]{
-		if (!AllocConsole())
-			return;
+	// create console
+	if (!AllocConsole())
+		return;
 
-		FILE* f;
-		freopen_s(&f, "CONOUT$", "w", stdout);
-		freopen_s(&f, "CONOUT$", "w", stderr);
-		freopen_s(&f, "CONIN$", "r", stdin);
-		SetConsoleOutputCP(1251);
-		}();
+	FILE* f;
+	freopen_s(&f, "CONOUT$", "w", stdout);
+	freopen_s(&f, "CONOUT$", "w", stderr);
+	freopen_s(&f, "CONIN$", "r", stdin);
 #endif
 
 	c_settings* cfg = c_settings::get();
