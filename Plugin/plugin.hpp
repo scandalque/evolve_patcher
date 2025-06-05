@@ -23,13 +23,13 @@ public:
 	static void game_loop();
 	static HANDLE WINAPI create_file_a(LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
 	static void __fastcall dialog_close(c_dialog*, void*, uint8_t);
-	static int __stdcall evolve_create_hook(LPCWSTR lpModuleName, LPCSTR lpProcName, LPCVOID a3, int a4, FARPROC* a5);
+	static int __fastcall evolve_create_hook(void*, void*, void**);
 
 	static c_hook<void(*)()> game_loop_hook;
 	static c_hook<decltype(&CreateFileW)> create_file_w_hook;
 	static c_hook<decltype(&CreateFileA)> create_file_a_hook;
 	static c_hook<void(__fastcall*)(c_dialog*, void*, uint8_t)> dialog_close_hook;
-	static c_hook<int(__stdcall*)(LPCWSTR lpModuleName, LPCSTR lpProcName, LPCVOID a3, int a4, FARPROC* a5)> evolve_create_hook_;
+	static c_hook<int(__fastcall*)(void*, void*, void**)> evolve_create_hook_;
 
 	static std::string get_caller_module(void* func);
 	static void create_textdraws();
@@ -38,6 +38,7 @@ public:
 	static void show_spawn_change_dialog();
 	static void send_spawn_change_response(uint8_t);
 
+	static void* create_file_a_addr;
 	static void* create_file_a_cb;
 	static void** create_file_a_orig;
 private:
@@ -47,8 +48,9 @@ private:
 inline c_hook<void(*)()> c_plugin::game_loop_hook = { 0x561B10 };
 inline c_hook<decltype(&CreateFileA)> c_plugin::create_file_a_hook = {};
 inline c_hook<void(__fastcall*)(c_dialog*, void*, uint8_t)> c_plugin::dialog_close_hook = {};
-inline c_hook<int(__stdcall*)(LPCWSTR lpModuleName, LPCSTR lpProcName, LPCVOID a3, int a4, FARPROC* a5)> c_plugin::evolve_create_hook_ = {};
+inline c_hook<int(__fastcall*)(void*, void*, void**)> c_plugin::evolve_create_hook_ = {};
 inline std::vector<int> c_plugin::last_spawn_data = {};
 
+inline void* c_plugin::create_file_a_addr = 0;
 inline void* c_plugin::create_file_a_cb = 0;
 inline void** c_plugin::create_file_a_orig = 0;

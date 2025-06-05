@@ -11,7 +11,6 @@ public:
 	~c_patches();
 
 	void enable_patches();
-	std::vector<std::string> get_patches_names();
 	static c_patches* get();
 
 private:
@@ -28,25 +27,31 @@ private:
 		{
 			"no_evolve_render",
 			evolve_processing,
-			"55 8B EC 81 EC E0 00 00 00 53 56 57 8D 7D E0 B9 08 00 00 00 B8 CC CC CC CC F3 AB B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 05",
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 7C 56",
 			"C3"
+		},
+		{
+			"no_evolve_render",
+			evolve_processing,
+			"E8 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 83 C4 04 81 C1 49 14 07 00",
+			"90 90 90 90 90"
 		},
 		{
 			"no_esc_transparency",
 			evolve_processing,
-			"53 8B DC 83 EC 08 83 E4 F8 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 53 81 EC C0 03 00 00 56 57 8D BD B0 FD FF FF B9 90 00 00 00 B8 CC CC CC CC F3 AB A1 ?? ?? ?? ?? 33 C5 89 45 EC 50 8D 45 F4 64 A3 00 00 00 00 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8",
+			"53 8B DC 83 EC 08 83 E4 F8 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 53 81 EC D0 00 00 00 A1 ?? ?? ?? ?? 33 C5 89 45 EC 56 57 50 8D 45 F4 64 A3 00 00 00 00 8B 35",
 			"C3"
 		},
 		{
 			"no_binds",
 			evolve_processing,
-			"74 0C E8 ?? ?? ?? ?? 0F B6 C0 85 C0 74 07 B0 01",
-			"EB"
+			"83 38 00 0F 84 B4 02 00 00",
+			"31 C0 90"
 		},
 		{
 			"no_framerate_vigilante",
 			evolve_processing,
-			"55 8B EC 81 EC 34 02 00 00 53 56 57 51 8D BD 8C FE FF FF B9 5D 00 00 00 B8 CC CC CC CC F3 AB 59 89 4D F8",
+			"55 8b ec 83 ec ? a1 ? ? ? ? 33 c5 89 45 ? 56 57 8d 45 ? c7 45",
 			"C3"
 		},
 		{
@@ -58,31 +63,31 @@ private:
 		{
 			"no_custom_radar",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 81 EC 80 01 00 00 53 56 57 51 8D BD 34 FF FF FF B9 30 00 00 00 B8 CC CC CC CC F3 AB 59 A1 ?? ?? ?? ?? 33 C5 89 45 F0",
+			"55 8b ec 6a ? 68 ? ? ? ? 64 a1 ? ? ? ? 50 83 ec ? a1 ? ? ? ? 33 c5 89 45 ? 53 56 50 8d 45 ? 64 a3 ? ? ? ? 83 ec",
 			"C3"
 		},
 		{
 			"no_discord_activity",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 81 EC 74 03 00 00 53 56 57 8D BD 00 FE FF FF B9 7D 00 00 00 B8 CC CC CC CC F3 AB A1 ?? ?? ?? ?? 33 C5 89 45 F0 50 8D 45 F4 64 A3 00 00 00 00 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8",
+			"53 8B DC 83 EC 08 83 E4 F8 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 53 81 EC 08 01 00 00",
 			"C3"
 		},
 		{
 			"no_new_auth",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 51 81 EC 64 01 00 00",
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 A1 ?? ?? ?? ?? 33 C5 89 45 EC",
 			"C3"
 		},
 		{
 			"no_new_spawnscreen",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 81 EC 68 01 00 00 53 56 57 8D BD 4C FF FF FF B9 2A 00 00 00 B8 CC CC CC CC F3 AB A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F B6 05",
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 54 56 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D ?? ?? ?? ?? ?? 0F 85 53 01 00 00",
 			"C3"
 		},
-		{//patch custom dialogs (кастомные эвольвовские диалоги несовместимы с плагинами и скриптами, которые сделаны на диалогах ;))
-			"no_new_spawnscreen",
+		{
+			"no_voice_chat",
 			evolve_processing,
-			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 81 EC 18 01 00 00 53 56 57 8D 7D 9C B9 16 00 00 00 B8 CC CC CC CC F3 AB A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? D9 1D",
+			"55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 00 00 00 00 50 83 EC 58 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 00 00 00 00 80 3D",
 			"C3"
 		}
 	};

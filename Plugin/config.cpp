@@ -30,15 +30,24 @@ void c_settings::load() {
 
 	file.close();
 }
-
 void c_settings::save() {
 	utils::log("config save called");
 	if (!data.size()) {
 		utils::log("data is empty");
-		for (auto& patch_name : c_patches::get()->get_patches_names()) {
-			data[patch_name] = true;
-		}
-		data["no_small_icons"] = true;
+		data = {
+			{"no_evolve_render", true},
+			{"no_esc_transparency", true},
+			{"no_binds", true},
+			{"no_framerate_vigilante", true},
+			{"fix_aim_movement", true},
+			{"no_custom_radar", true},
+			{"no_discord_activity", true},
+			{"no_new_auth", true},
+			{"no_new_spawnscreen", true},
+			{"no_voice_chat", false},
+			{"no_small_icons", true},
+			{"no_custom_menu", false},
+		};
 	}
 
 	std::ofstream file(this->path);
